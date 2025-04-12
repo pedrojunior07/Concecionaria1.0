@@ -12,20 +12,10 @@ import javax.swing.ImageIcon;
 
 public class Cliente implements Serializable {
     private String nome,sexo, apelido, naturalidade, identidade, estadocivil, eMail,dataNascimento;
-    private ImageIcon icon;
     private int idade, Id, telefone;
     private Carro carro;
 
-    public ImageIcon getIcon() {
-        return icon;
-    }
-
-    public void setIcon(ImageIcon icon) {
-        this.icon = icon;
-    }
-    
-
-    public Carro getCarro() {
+       public Carro getCarro() {
         return carro;
     }
 

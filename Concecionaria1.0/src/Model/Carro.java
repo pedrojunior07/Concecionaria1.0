@@ -7,26 +7,75 @@ package Model;
 import java.io.Serializable;
 import java.util.Calendar;
 
-/**
- *
- * @author Pedro
- */
-public class Carro extends Veiculo implements carrosMetodos, Serializable {
+
+public class Carro implements carrosMetodos, Serializable {
 private String modelo, tracao;
 private int numMotor, numChassi, quilometosPercoridos;
-private boolean vendido, operacional;
-private int fornecedorId, cor;
+private boolean estadoVenda ;
+ private String cor ;
+ int Id;
+  private String categoria,  tipoDeComustivel, fabricante;
+  private int anoDeFabrico, idProduto;
+  private double preco;
 
-    public int getCor() {
+      public int getId() {
+        return Id;
+    }
+
+    public String getCor() {
         return cor;
     }
 
-    public void setCor(int cor) {
+    public void setCor(String cor) {
         this.cor = cor;
     }
 
-    public int getId() {
-        return Id;
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+
+    public String getTipoDeComustivel() {
+        return tipoDeComustivel;
+    }
+
+    public void setTipoDeComustivel(String tipoDeComustivel) {
+        this.tipoDeComustivel = tipoDeComustivel;
+    }
+
+    public String getFabricante() {
+        return fabricante;
+    }
+
+    public void setFabricante(String fabricante) {
+        this.fabricante = fabricante;
+    }
+
+    public int getAnoDeFabrico() {
+        return anoDeFabrico;
+    }
+
+    public void setAnoDeFabrico(int anoDeFabrico) {
+        this.anoDeFabrico = anoDeFabrico;
+    }
+
+    public int getIdProduto() {
+        return idProduto;
+    }
+
+    public void setIdProduto(int idProduto) {
+        this.idProduto = idProduto;
+    }
+
+    public double getPreco() {
+        return preco;
+    }
+
+    public void setPreco(double preco) {
+        this.preco = preco;
     }
 
     public void setId(int Id) {
@@ -34,13 +83,7 @@ private int fornecedorId, cor;
     }
 
 
-    public int getFornecedorId() {
-        return fornecedorId;
-    }
-
-    public void setFornecedorId(int fornecedorId) {
-        this.fornecedorId = fornecedorId;
-    }
+ 
 
   
     public String getModelo() {
@@ -83,37 +126,16 @@ private int fornecedorId, cor;
         this.quilometosPercoridos = quilometosPercoridos;
     }
 
-    public boolean isVendido() {
-        return vendido;
+    public boolean isEstado() {
+        return estadoVenda;
     }
 
-    public void setVendido(boolean vendido) {
-        this.vendido = vendido;
-    }
-
-    public boolean isOperacional() {
-        return operacional;
-    }
-
-    public void setOperacional(boolean operacional) {
-        this.operacional = operacional;
+    public void setEstado(boolean estado) {
+        this.estadoVenda = estado;
     }
 
     
-    
-    
-    
-    
-    
-    
-    
-    
-    @Override
-    public int getIdadeDoVeiculo(int anoDeFabrico) {
-      Calendar c = Calendar.getInstance(); 
-    return c.getWeekYear()- anoDeFabrico;
-    }
-
+  
     @Override
     public String estadoDoVeiculo(int quilometosPercoridos) {
     if(quilometosPercoridos>0)  { return "usado";}else
