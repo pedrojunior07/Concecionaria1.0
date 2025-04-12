@@ -12,8 +12,8 @@ import java.util.Date;
  *
  * @author Pedro
  */
-public abstract class Funcionario implements Serializable {
-    private String nome,sexo, apelido, naturalidade, identidade, estadocivil, especialidade, eMail, senha;
+public  class Funcionario implements Serializable {
+    private String nome,sexo, apelido, naturalidade, estadocivil, especialidade, eMail, senha;
     private int idade, Id, telefone;
 
     public void setSalario(double salario) {
@@ -122,13 +122,6 @@ public abstract class Funcionario implements Serializable {
         this.naturalidade = naturalidade;
     }
 
-    public String getIdentidade() {
-        return identidade;
-    }
-
-    public void setIdentidade(String identidade) {
-        this.identidade = identidade;
-    }
 
     public String getEstadocivil() {
         return estadocivil;
@@ -179,8 +172,6 @@ public abstract class Funcionario implements Serializable {
     
     
    
-    public abstract int getIdade(int anoNascimento);
-    public abstract int tempoNaEmpresa(int anoDeEntrada);
     
     
     

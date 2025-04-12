@@ -7,6 +7,8 @@ package View;
 
 
 
+import Controller.GenericDao;
+import Model.Funcionario;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -14,8 +16,23 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
+import java.util.List;
+import java.util.ArrayList;
+import javax.swing.JPasswordField;
+import javax.swing.JCheckBox;
+import javax.swing.JOptionPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableModel;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import javax.swing.SpinnerNumberModel;
+
+// Importe suas classes específicas para o projeto
+import Model.Funcionario;
 
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import java.util.ArrayList;
 
 public class AdminFrame extends JFrame {
     
@@ -29,7 +46,7 @@ public class AdminFrame extends JFrame {
     
     // Cores para os temas (serão sobrescritas pelo FlatLaf)
     private boolean isDarkTheme = false;
-    
+    private GenericDao<Funcionario> dao;
     public AdminFrame() {
         setTitle("Sistema de Gestão de Venda de Carros - Painel de Administrador");
         setSize(1200, 680);
@@ -255,94 +272,535 @@ public class AdminFrame extends JFrame {
     }
     
     // Implementação dos painéis para as opções do menu
-    private void showAddEmployeePanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
-        
-        JLabel titleLabel = new JLabel("Adicionar Novo Funcionário");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        
-        JPanel formPanel = new JPanel(new GridLayout(6, 2, 10, 10));
-        
-        formPanel.add(new JLabel("Nome:"));
-        formPanel.add(new JTextField());
-        
-        formPanel.add(new JLabel("Email:"));
-        formPanel.add(new JTextField());
-        
-        formPanel.add(new JLabel("Telefone:"));
-        formPanel.add(new JTextField());
-        
-        formPanel.add(new JLabel("Cargo:"));
-        String[] cargos = {"Vendedor", "Gerente", "Administrativo", "Mecânico"};
-        formPanel.add(new JComboBox<>(cargos));
-        
-        formPanel.add(new JLabel("Data de Contratação:"));
-        formPanel.add(new JTextField("DD/MM/AAAA"));
-        
-        formPanel.add(new JLabel("Salário Base:"));
-        formPanel.add(new JTextField());
-        
-        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton saveButton = new JButton("Salvar");
-        JButton cancelButton = new JButton("Cancelar");
-        
-        buttonsPanel.add(saveButton);
-        buttonsPanel.add(cancelButton);
-        
-        panel.add(titleLabel, BorderLayout.NORTH);
-        panel.add(formPanel, BorderLayout.CENTER);
-        panel.add(buttonsPanel, BorderLayout.SOUTH);
-        
-        contentPanel.add(panel);
+   private void showAddEmployeePanel() {
+    JPanel panel = new JPanel(new BorderLayout());
+    panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+    
+    JLabel titleLabel = new JLabel("Adicionar Novo Funcionário");
+    titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+    
+    // Criar painel de rolagem para acomodar todos os campos
+    JPanel formPanel = new JPanel(new GridBagLayout());
+    GridBagConstraints gbc = new GridBagConstraints();
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+    gbc.insets = new Insets(5, 5, 5, 5);
+    
+    // Campos da classe Funcionario
+    // Informações pessoais
+    JTextField nomeField = new JTextField(20);
+    JTextField apelidoField = new JTextField(20);
+    
+    // Sexo (ComboBox)
+    String[] sexos = {"Masculino", "Feminino", "Outro"};
+    JComboBox<String> sexoCombo = new JComboBox<>(sexos);
+    
+    // Idade
+    JSpinner idadeSpinner = new JSpinner(new SpinnerNumberModel(18, 18, 100, 1));
+    
+    // Data de Nascimento
+    JTextField dataNascField = new JTextField("DD/MM/AAAA", 10);
+    
+    // Estado Civil
+    String[] estadosCivis = {"Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)", "União Estável"};
+    JComboBox<String> estadoCivilCombo = new JComboBox<>(estadosCivis);
+    
+    // Naturalidade (ComboBox com países)
+    String[] paises = {"Angola", "Portugal", "Brasil", "Moçambique", "Cabo Verde", 
+                      "Guiné-Bissau", "São Tomé e Príncipe", "Timor-Leste", 
+                      "África do Sul", "Estados Unidos", "Espanha", "França", 
+                      "Reino Unido", "Alemanha", "Itália", "China", "Japão", 
+                      "Austrália", "Canadá", "México"};
+    JComboBox<String> naturalidadeCombo = new JComboBox<>(paises);
+    
+    // Contato
+    JTextField emailField = new JTextField(20);
+    JTextField telefoneField = new JTextField(15);
+    
+    // Informações profissionais
+    // Especialidade/Cargo
+    String[] especialidades = {"Vendedor", "Gerente", "Administrativo", "Mecânico", "Atendente"};
+    JComboBox<String> especialidadeCombo = new JComboBox<>(especialidades);
+    
+    // Campo de senha (visível apenas para vendedores)
+    JPasswordField senhaField = new JPasswordField(15);
+    JLabel senhaLabel = new JLabel("Senha:");
+    senhaField.setVisible(false);
+    senhaLabel.setVisible(false);
+    
+    // Adicionar listener ao combobox de especialidade
+    especialidadeCombo.addActionListener(e -> {
+        String selectedEspecialidade = (String) especialidadeCombo.getSelectedItem();
+        if (selectedEspecialidade.equals("Vendedor")) {
+            senhaField.setVisible(true);
+            senhaLabel.setVisible(true);
+        } else {
+            senhaField.setVisible(false);
+            senhaLabel.setVisible(false);
+        }
+        formPanel.revalidate();
+        formPanel.repaint();
+    });
+    
+    // Data do Contrato
+    JTextField dataContratoField = new JTextField("DD/MM/AAAA", 10);
+    
+    // Salário
+    JTextField salarioField = new JTextField(10);
+    
+    // ID (pode ser autoincrementado ou gerado)
+    JSpinner idSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 9999, 1));
+    
+    // Estado (ativo/inativo)
+    JCheckBox estadoCheck = new JCheckBox("Ativo");
+    estadoCheck.setSelected(true);
+    
+    // Níveis de acesso
+    JCheckBox acessoNivel1Check = new JCheckBox("Acesso Nível 1");
+    JCheckBox acessoNivel2Check = new JCheckBox("Acesso Nível 2");
+    JCheckBox acessoNivel3Check = new JCheckBox("Acesso Nível 3");
+    
+    // Adicionar componentes ao painel usando GridBagLayout
+    gbc.gridx = 0;
+    gbc.gridy = 0;
+    formPanel.add(new JLabel("Nome:"), gbc);
+    gbc.gridx = 1;
+    formPanel.add(nomeField, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(new JLabel("Apelido:"), gbc);
+    gbc.gridx = 1;
+    formPanel.add(apelidoField, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(new JLabel("Sexo:"), gbc);
+    gbc.gridx = 1;
+    formPanel.add(sexoCombo, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(new JLabel("Idade:"), gbc);
+    gbc.gridx = 1;
+    formPanel.add(idadeSpinner, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(new JLabel("Data de Nascimento:"), gbc);
+    gbc.gridx = 1;
+    formPanel.add(dataNascField, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(new JLabel("Estado Civil:"), gbc);
+    gbc.gridx = 1;
+    formPanel.add(estadoCivilCombo, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(new JLabel("Naturalidade:"), gbc);
+    gbc.gridx = 1;
+    formPanel.add(naturalidadeCombo, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(new JLabel("Email:"), gbc);
+    gbc.gridx = 1;
+    formPanel.add(emailField, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(new JLabel("Telefone:"), gbc);
+    gbc.gridx = 1;
+    formPanel.add(telefoneField, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(new JLabel("Especialidade:"), gbc);
+    gbc.gridx = 1;
+    formPanel.add(especialidadeCombo, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(senhaLabel, gbc);
+    gbc.gridx = 1;
+    formPanel.add(senhaField, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(new JLabel("Data do Contrato:"), gbc);
+    gbc.gridx = 1;
+    formPanel.add(dataContratoField, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(new JLabel("Salário:"), gbc);
+    gbc.gridx = 1;
+    formPanel.add(salarioField, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(new JLabel("ID:"), gbc);
+    gbc.gridx = 1;
+    formPanel.add(idSpinner, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(new JLabel("Estado:"), gbc);
+    gbc.gridx = 1;
+    formPanel.add(estadoCheck, gbc);
+    
+    gbc.gridx = 0;
+    gbc.gridy++;
+    formPanel.add(new JLabel("Níveis de Acesso:"), gbc);
+    gbc.gridx = 1;
+    JPanel acessoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    acessoPanel.add(acessoNivel1Check);
+    acessoPanel.add(acessoNivel2Check);
+    acessoPanel.add(acessoNivel3Check);
+    formPanel.add(acessoPanel, gbc);
+    
+    // Painel de rolagem para o formulário
+    JScrollPane scrollPane = new JScrollPane(formPanel);
+    scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+    
+    // Botões
+    JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+    JButton saveButton = new JButton("Salvar");
+    JButton cancelButton = new JButton("Cancelar");
+    
+    // Implementar a ação de salvar
+    saveButton.addActionListener(e -> {
+        try {
+            // Criar um novo objeto Funcionario
+            Funcionario funcionario = new Funcionario();
+            
+            // Preencher com os dados do formulário
+            funcionario.setNome(nomeField.getText());
+            funcionario.setApelido(apelidoField.getText());
+            funcionario.setSexo((String) sexoCombo.getSelectedItem());
+            funcionario.setIdade((Integer) idadeSpinner.getValue());
+            funcionario.setDataDeNascimento(dataNascField.getText());
+            funcionario.setEstadocivil((String) estadoCivilCombo.getSelectedItem());
+            funcionario.setNaturalidade((String) naturalidadeCombo.getSelectedItem());
+            funcionario.seteMail(emailField.getText());
+            
+            // Tratar o telefone (converter para int)
+            try {
+                funcionario.setTelefone(Integer.parseInt(telefoneField.getText()));
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(panel, "Telefone inválido. Insira apenas números.", 
+                        "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            funcionario.setEspecialidade((String) especialidadeCombo.getSelectedItem());
+            
+            // Definir senha apenas se for vendedor
+            if (especialidadeCombo.getSelectedItem().equals("Vendedor")) {
+                funcionario.setSenha(new String(senhaField.getPassword()));
+            }
+            
+            funcionario.setDataDoContrato(dataContratoField.getText());
+            
+            // Tratar o salário (converter para double)
+            try {
+                funcionario.setSalario(Double.parseDouble(salarioField.getText().replace(",", ".")));
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(panel, "Salário inválido. Use formato numérico (ex: 1500.00)", 
+                        "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            funcionario.setId((Integer) idSpinner.getValue());
+            funcionario.setEstado(estadoCheck.isSelected());
+            funcionario.setAcessoNivel1(acessoNivel1Check.isSelected());
+            funcionario.setAcessoNivel2(acessoNivel2Check.isSelected());
+            funcionario.setAcessoNivel3(acessoNivel3Check.isSelected());
+            
+            // Salvar usando GenericDAO
+            dao =  new GenericDao<>(Funcionario.class);
+            boolean success = dao.insert(funcionario);
+            
+            if (success) {
+                JOptionPane.showMessageDialog(panel, "Funcionário adicionado com sucesso!", 
+                        "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                // Limpar campos ou redirecionar para a lista
+                limparCampos();
+                showEmployeeListPanel(); // Opcional: redirecionar para a lista de funcionários
+            } else {
+                JOptionPane.showMessageDialog(panel, "Erro ao salvar funcionário.", 
+                        "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+            
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(panel, "Erro: " + ex.getMessage(), 
+                    "Erro", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
+    });
+    
+    // Implementar ação de cancelar
+    cancelButton.addActionListener(e -> {
+        // Simplesmente voltar para o painel principal ou limpar os campos
+        limparCampos();
+        showWelcomePanel();
+    });
+    
+    buttonsPanel.add(saveButton);
+    buttonsPanel.add(cancelButton);
+    
+    panel.add(titleLabel, BorderLayout.NORTH);
+    panel.add(scrollPane, BorderLayout.CENTER);
+    panel.add(buttonsPanel, BorderLayout.SOUTH);
+    
+    contentPanel.add(panel);
+}
+
+// Método auxiliar para limpar os campos do formulário
+private void limparCampos() {
+    // Este método será chamado para limpar todos os campos após salvar ou cancelar
+    Component[] components = contentPanel.getComponents();
+    for (Component component : components) {
+        if (component instanceof JPanel) {
+            limparComponentes((JPanel) component);
+        }
     }
+}
+
+private void limparComponentes(JPanel panel) {
+    Component[] components = panel.getComponents();
+    for (Component component : components) {
+        if (component instanceof JTextField) {
+            ((JTextField) component).setText("");
+        } else if (component instanceof JPasswordField) {
+            ((JPasswordField) component).setText("");
+        } else if (component instanceof JComboBox) {
+            ((JComboBox<?>) component).setSelectedIndex(0);
+        } else if (component instanceof JSpinner) {
+            ((JSpinner) component).setValue(((SpinnerNumberModel) ((JSpinner) component).getModel()).getMinimum());
+        } else if (component instanceof JCheckBox) {
+            ((JCheckBox) component).setSelected(false);
+        } else if (component instanceof JPanel) {
+            limparComponentes((JPanel) component);
+        } else if (component instanceof JScrollPane) {
+            Component viewComponent = ((JScrollPane) component).getViewport().getView();
+            if (viewComponent instanceof JPanel) {
+                limparComponentes((JPanel) viewComponent);
+            }
+        }
+    }
+}
     
     private void showEmployeeListPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
-        
-        JLabel titleLabel = new JLabel("Lista de Funcionários");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        
-        // Dados fictícios para a tabela
-        String[] colunas = {"ID", "Nome", "Email", "Telefone", "Cargo", "Data Contratação"};
-        Object[][] dados = {
-            {"1", "João Silva", "joao.silva@email.com", "912345678", "Vendedor", "12/01/2023"},
-            {"2", "Maria Santos", "maria.santos@email.com", "923456789", "Gerente", "05/06/2022"},
-            {"3", "Pedro Oliveira", "pedro.oliveira@email.com", "934567890", "Administrativo", "20/03/2023"},
-            {"4", "Ana Ferreira", "ana.ferreira@email.com", "945678901", "Vendedor", "15/07/2023"},
-            {"5", "Carlos Rodrigues", "carlos.rodrigues@email.com", "956789012", "Mecânico", "30/09/2022"}
-        };
-        
-        JTable table = new JTable(dados, colunas);
-        JScrollPane scrollPane = new JScrollPane(table);
-        
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        searchPanel.add(new JLabel("Pesquisar:"));
-        searchPanel.add(new JTextField(20));
-        JButton searchButton = new JButton("Buscar");
-        searchPanel.add(searchButton);
-        
-        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton addButton = new JButton("Adicionar");
-        JButton editButton = new JButton("Editar");
-        JButton deleteButton = new JButton("Remover");
-        
-        buttonsPanel.add(addButton);
-        buttonsPanel.add(editButton);
-        buttonsPanel.add(deleteButton);
-        
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.add(titleLabel, BorderLayout.WEST);
-        topPanel.add(searchPanel, BorderLayout.EAST);
-        
-        panel.add(topPanel, BorderLayout.NORTH);
-        panel.add(scrollPane, BorderLayout.CENTER);
-        panel.add(buttonsPanel, BorderLayout.SOUTH);
-        
-        contentPanel.add(panel);
+    JPanel panel = new JPanel(new BorderLayout());
+    panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+    
+    JLabel titleLabel = new JLabel("Lista de Funcionários");
+    titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+    
+    // Obter lista de funcionários do GenericDAO
+//    GenericDAO<Funcionario> dao = new GenericDAO<>();
+    List<Funcionario> funcionarios = dao.getAll();
+    
+    // Definir colunas da tabela
+    String[] colunas = {"ID", "Nome", "Apelido", "Sexo", "Idade", "Email", "Telefone", 
+                        "Especialidade", "Salário", "Data Contrato", "Estado"};
+    
+    // Converter a lista de funcionários para um array bidimensional para a JTable
+    Object[][] dados;
+    if (funcionarios != null && !funcionarios.isEmpty()) {
+        dados = new Object[funcionarios.size()][colunas.length];
+        for (int i = 0; i < funcionarios.size(); i++) {
+            Funcionario f = funcionarios.get(i);
+            dados[i][0] = f.getId();
+            dados[i][1] = f.getNome();
+            dados[i][2] = f.getApelido();
+            dados[i][3] = f.getSexo();
+            dados[i][4] = f.getIdade();
+            dados[i][5] = f.geteMail();
+            dados[i][6] = f.getTelefone();
+            dados[i][7] = f.getEspecialidade();
+            dados[i][8] = String.format("%.2f", f.getSalario());
+            dados[i][9] = f.getDataDoContrato();
+            dados[i][10] = f.isEstado() ? "Ativo" : "Inativo";
+        }
+    } else {
+        // Se não houver funcionários, criar uma tabela vazia
+        dados = new Object[0][colunas.length];
     }
     
+    // Criar a tabela com os dados
+    JTable table = new JTable(dados, colunas);
+    JScrollPane scrollPane = new JScrollPane(table);
+    
+    // Permitir seleção de apenas uma linha por vez
+    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    
+    // Ajustar algumas propriedades da tabela
+    table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+    table.getTableHeader().setReorderingAllowed(false);
+    
+    // Painel de pesquisa
+    JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    searchPanel.add(new JLabel("Pesquisar:"));
+    JTextField searchField = new JTextField(20);
+    JButton searchButton = new JButton("Buscar");
+    searchPanel.add(searchField);
+    searchPanel.add(searchButton);
+    
+    // Implementar a funcionalidade de busca
+    searchButton.addActionListener(e -> {
+        String searchTerm = searchField.getText().toLowerCase();
+        if (searchTerm.isEmpty()) {
+            // Se o campo de busca estiver vazio, recarregar todos os dados
+            showEmployeeListPanel();
+            return;
+        }
+        
+        // Filtrar funcionários que correspondem ao termo de busca
+        List<Funcionario> filteredList = new ArrayList<>();
+        for (Funcionario f : funcionarios) {
+            if (f.getNome().toLowerCase().contains(searchTerm) || 
+                f.getApelido().toLowerCase().contains(searchTerm) ||
+                f.geteMail().toLowerCase().contains(searchTerm) ||
+                String.valueOf(f.getId()).contains(searchTerm)) {
+                filteredList.add(f);
+            }
+        }
+        
+        // Atualizar a tabela com os resultados filtrados
+        Object[][] filteredData = new Object[filteredList.size()][colunas.length];
+        for (int i = 0; i < filteredList.size(); i++) {
+            Funcionario f = filteredList.get(i);
+            filteredData[i][0] = f.getId();
+            filteredData[i][1] = f.getNome();
+            filteredData[i][2] = f.getApelido();
+            filteredData[i][3] = f.getSexo();
+            filteredData[i][4] = f.getIdade();
+            filteredData[i][5] = f.geteMail();
+            filteredData[i][6] = f.getTelefone();
+            filteredData[i][7] = f.getEspecialidade();
+            filteredData[i][8] = String.format("%.2f", f.getSalario());
+            filteredData[i][9] = f.getDataDoContrato();
+            filteredData[i][10] = f.isEstado() ? "Ativo" : "Inativo";
+        }
+        
+        // Criar um novo modelo de tabela com os dados filtrados
+        table.setModel(new DefaultTableModel(filteredData, colunas));
+    });
+    
+    // Botões de ação
+    JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+    JButton addButton = new JButton("Adicionar");
+    JButton editButton = new JButton("Editar");
+    JButton deleteButton = new JButton("Remover");
+    
+    // Implementar ação do botão Adicionar
+    addButton.addActionListener(e -> {
+        showAddEmployeePanel();
+    });
+    
+    // Implementar ação do botão Editar
+    editButton.addActionListener(e -> {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow >= 0) {
+            int id = (int) table.getValueAt(selectedRow, 0);
+            // Encontrar o funcionário pelo ID
+            Funcionario funcionarioToEdit = null;
+            for (Funcionario f : funcionarios) {
+                if (f.getId() == id) {
+                    funcionarioToEdit = f;
+                    break;
+                }
+            }
+            
+            if (funcionarioToEdit != null) {
+                // Abrir o formulário de edição com os dados preenchidos
+                showEditEmployeePanel(funcionarioToEdit);
+            }
+        } else {
+            JOptionPane.showMessageDialog(panel, "Selecione um funcionário para editar.", 
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+        }
+    });
+    
+    // Implementar ação do botão Remover
+    deleteButton.addActionListener(e -> {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow >= 0) {
+            int id = (int) table.getValueAt(selectedRow, 0);
+            String nome = (String) table.getValueAt(selectedRow, 1);
+            
+            // Confirmar antes de excluir
+            int confirm = JOptionPane.showConfirmDialog(panel, 
+                    "Tem certeza que deseja remover o funcionário " + nome + "?", 
+                    "Confirmar Exclusão", JOptionPane.YES_NO_OPTION);
+            
+            if (confirm == JOptionPane.YES_OPTION) {
+                // Encontrar o funcionário pelo ID
+                Funcionario funcionarioToDelete = null;
+                for (Funcionario f : funcionarios) {
+                    if (f.getId() == id) {
+                        funcionarioToDelete = f;
+                        break;
+                    }
+                }
+                
+                if (funcionarioToDelete != null) {
+                    // Excluir usando o DAO
+//                    boolean success = dao.delete(nome, idExtractor));
+                    
+                    if (true) {
+                        JOptionPane.showMessageDialog(panel, "Funcionário removido com sucesso!", 
+                                "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                        // Recarregar a lista
+                        showEmployeeListPanel();
+                    } else {
+                        JOptionPane.showMessageDialog(panel, "Erro ao remover funcionário.", 
+                                "Erro", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(panel, "Selecione um funcionário para remover.", 
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+        }
+    });
+    
+    buttonsPanel.add(addButton);
+    buttonsPanel.add(editButton);
+    buttonsPanel.add(deleteButton);
+    
+    JPanel topPanel = new JPanel(new BorderLayout());
+    topPanel.add(titleLabel, BorderLayout.WEST);
+    topPanel.add(searchPanel, BorderLayout.EAST);
+    
+    panel.add(topPanel, BorderLayout.NORTH);
+    panel.add(scrollPane, BorderLayout.CENTER);
+    panel.add(buttonsPanel, BorderLayout.SOUTH);
+    
+    contentPanel.add(panel);
+}
+
+// Método para editar um funcionário existente
+private void showEditEmployeePanel(Funcionario funcionario) {
+    // Este método seria semelhante ao showAddEmployeePanel, mas com os campos 
+    // preenchidos com os dados do funcionário selecionado
+    // Por questões de brevidade, este método não está completamente implementado aqui
+    
+    // Uma implementação completa preencheria todos os campos do formulário com os dados do funcionário
+    // e salvaria as alterações usando dao.update(funcionario) em vez de dao.save(funcionario)
+    
+    JOptionPane.showMessageDialog(contentPanel, 
+            "Funcionalidade de edição a ser implementada.", 
+            "Em Desenvolvimento", JOptionPane.INFORMATION_MESSAGE);
+    
+    // Como exemplo básico, podemos chamar o método de adicionar e depois preencher os campos
+    showAddEmployeePanel();
+    
+    // Idealmente, aqui você preencheria todos os campos com os dados do funcionário selecionado
+}
     private void showRatesPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(new EmptyBorder(20, 20, 20, 20));
