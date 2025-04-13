@@ -10,10 +10,21 @@ import javax.swing.ImageIcon;
  * 
  */
 
-public class Cliente implements Serializable {
+public class ClienteVenda implements Serializable {
     private String nome,sexo, apelido, naturalidade, identidade, estadocivil, eMail,dataNascimento;
     private int idade, Id, telefone;
     private Carro carro;
+    private Funcionario funcionario;
+
+    public Funcionario getFuncionario() {
+        return funcionario;
+    }
+
+    public void setFuncionario(Funcionario funcionario) {
+        this.funcionario = funcionario;
+    }
+    
+    
 
        public Carro getCarro() {
         return carro;

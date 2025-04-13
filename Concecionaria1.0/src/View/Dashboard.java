@@ -7,7 +7,8 @@ package View;
 
 import Controller.GenericDao;
 import Model.Carro;
-import Model.Cliente;
+import Model.ClienteVenda;
+import Model.Funcionario;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.BorderLayout;
@@ -70,7 +71,7 @@ public class Dashboard extends JFrame {
     
     // Data Access Objects
     private GenericDao<Carro> carroDao;
-    private GenericDao<Cliente> clienteDao;
+    private GenericDao<ClienteVenda> clienteDao;
     
     // Current car images
     private Map<Integer, ArrayList<String>> carImagesMap;
@@ -79,12 +80,13 @@ public class Dashboard extends JFrame {
     
     // Selected car for sale
     private Carro selectedCarro;
-    
+   public Funcionario f;
     // Constructor
-    public Dashboard() {
+    public Dashboard( Funcionario f) {
+        this.f = f; 
         // Initialize DAOs
         carroDao = new GenericDao<>(Carro.class);
-        clienteDao = new GenericDao<>(Cliente.class);
+        clienteDao = new GenericDao<>(ClienteVenda.class);
         carImagesMap = new HashMap<>();
         
         // Set up frame
@@ -144,7 +146,7 @@ public class Dashboard extends JFrame {
         themeTogglePanel.add(darkThemeRadio);
         
         // Create system info
-        JLabel systemInfoLabel = new JLabel("Sistema de Gestão de Venda de Carros | Perfil: Vendedor");
+        JLabel systemInfoLabel = new JLabel("Sistema de Gestão de Venda de Carros | Perfil Vendedor: "+f.getNome()+" "+f.getApelido());
         systemInfoLabel.setForeground(Color.WHITE);
         systemInfoLabel.setFont(new Font("Arial", Font.BOLD, 16));
         systemInfoLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -682,7 +684,7 @@ public class Dashboard extends JFrame {
                 }
                 
                 // Create client
-                Cliente cliente = new Cliente();
+                ClienteVenda cliente = new ClienteVenda();
                 cliente.setNome(nomeField.getText());
                 cliente.setApelido(apelidoField.getText());
                 cliente.setSexo(sexoCombo.getSelectedItem().toString());
@@ -911,7 +913,7 @@ public class Dashboard extends JFrame {
                 int clientId = Integer.parseInt(clientsTable.getValueAt(selectedRow, 0).toString());
                 
                 // Get client by ID
-                Cliente cliente = clienteDao.getById(String.valueOf(clientId), client -> String.valueOf(client.getId()))
+                ClienteVenda cliente = clienteDao.getById(String.valueOf(clientId), client -> String.valueOf(client.getId()))
                         .orElse(null);
                 
                 if (cliente != null) {
@@ -1059,7 +1061,7 @@ public class Dashboard extends JFrame {
             
             if (option == JOptionPane.YES_OPTION) {
                 // Clear client data
-                ArrayList<Cliente> emptyList = new ArrayList<>();
+                ArrayList<ClienteVenda> emptyList = new ArrayList<>();
                 clienteDao.closeFile(emptyList);
                 JOptionPane.showMessageDialog(panel, "Dados de clientes limpos com sucesso!", "Limpeza", JOptionPane.INFORMATION_MESSAGE);
             }
@@ -1099,9 +1101,9 @@ public class Dashboard extends JFrame {
     
     private void loadClientData(DefaultTableModel tableModel) {
         tableModel.setRowCount(0);
-        ArrayList<Cliente> clients = clienteDao.getAll();
+        ArrayList<ClienteVenda> clients = clienteDao.getAll();
         
-        for (Cliente client : clients) {
+        for (ClienteVenda client : clients) {
             String carroInfo = "N/A";
             if (client.getCarro() != null) {
                 Carro carro = client.getCarro();
@@ -1160,7 +1162,7 @@ public class Dashboard extends JFrame {
                 // Set the default look and feel to FlatLightLaf
                 UIManager.setLookAndFeel(new FlatLightLaf());
                 
-                new Dashboard();
+//                new Dashboard();
             } catch (Exception e) {
                 e.printStackTrace();
             }

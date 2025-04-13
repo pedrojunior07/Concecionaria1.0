@@ -58,7 +58,7 @@ public class AdminFrame extends JFrame {
         
         // Inicializa os componentes
         initComponents();
-        
+         dao =  new GenericDao<>(Funcionario.class);
         // Aplica o tema inicial (FlatMacLightLaf por padrão)
         applyTheme();
         
@@ -519,7 +519,7 @@ public class AdminFrame extends JFrame {
             funcionario.setAcessoNivel3(acessoNivel3Check.isSelected());
             
             // Salvar usando GenericDAO
-            dao =  new GenericDao<>(Funcionario.class);
+           
             boolean success = dao.insert(funcionario);
             
             if (success) {
